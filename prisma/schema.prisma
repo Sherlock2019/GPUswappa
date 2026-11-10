@@ -1,0 +1,1190 @@
+// AI-GPU-Swapper — database schema (PostgreSQL)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ───────────────────────────── Enums ─────────────────────────────
+
+enum Role {
+  BUYER
+  SELLER
+  REVIEWER
+  BROKER
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+enum CompanyType {
+  DATA_CENTRE
+  CLOUD_PROVIDER
+  AI_STARTUP
+  ENTERPRISE
+  SYSTEM_INTEGRATOR
+  RESELLER
+  RESEARCH_INSTITUTION
+  OTHER
+}
+
+enum CompanyVerification {
+  NOT_SUBMITTED
+  PENDING
+  NEEDS_INFO
+  VERIFIED
+  REJECTED
+}
+
+enum MembershipAuth {
+  PENDING
+  AUTHORIZED
+  REVOKED
+}
+
+enum Manufacturer {
+  NVIDIA
+  AMD
+  INTEL
+  SERVER_MANUFACTURER
+  OTHER
+}
+
+enum Condition {
+  NEW
+  UNUSED
+  USED
+  REFURBISHED
+}
+
+enum TriState {
+  YES
+  NO
+  UNKNOWN
+}
+
+enum OwnershipAnswer {
+  OWNS
+  AUTHORIZED
+  NO
+  UNKNOWN
+}
+
+enum Encumbrance {
+  NONE
+  LEASED
+  FINANCED
+  OTHER_RIGHTS
+  UNKNOWN
+}
+
+enum CustomsStatus {
+  CLEARED_DOMESTIC
+  OTHER_KNOWN
+  UNKNOWN
+}
+
+enum TransactionType {
+  SALE
+  SWAP
+  SALE_OR_SWAP
+}
+
+enum WarrantyStatus {
+  MANUFACTURER
+  SELLER
+  NONE
+  UNKNOWN
+}
+
+enum PlatformRole {
+  INTERMEDIARY
+  SELLER
+}
+
+enum PublicationStatus {
+  DRAFT
+  UNDER_REVIEW
+  NEEDS_INFO
+  ON_HOLD
+  PUBLISHED
+  REJECTED
+  ARCHIVED
+}
+
+enum ReviewStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum CheckType {
+  SELLER_IDENTITY
+  SELLER_AUTHORITY
+  OWNERSHIP_EVIDENCE
+  FINANCING_LEASE
+  CUSTOMS_STATUS
+  ASSET_IDENTIFICATION
+  TECHNICAL_CONDITION
+  WARRANTY_EVIDENCE
+  DATA_SANITISATION
+  EXPORT_CONTROL
+}
+
+enum CheckStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  NEEDS_INFO
+  PASSED
+  FAILED
+  NOT_APPLICABLE
+}
+
+enum ReviewOutcome {
+  APPROVE
+  RETURN_FOR_INFO
+  HOLD
+  REJECT
+  ARCHIVE
+}
+
+enum DocumentType {
+  COMPANY_REGISTRATION
+  SELLER_AUTHORIZATION
+  PURCHASE_INVOICE
+  ALTERNATIVE_OWNERSHIP_EVIDENCE
+  CUSTOMS_DECLARATION
+  LEASE_OR_FINANCE
+  TECHNICAL_REPORT
+  WARRANTY
+  DATA_SANITISATION_REPORT
+  OTHER
+}
+
+enum DocReviewStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+enum RetentionStatus {
+  ACTIVE
+  SCHEDULED_DELETION
+  DELETED
+}
+
+enum ImageApproval {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum EnquiryStatus {
+  NEW
+  BUYER_VERIFICATION_REQUIRED
+  UNDER_BROKER_REVIEW
+  QUESTIONS_RELAYED
+  OFFER_RECEIVED
+  NEGOTIATING
+  INSPECTION_REQUESTED
+  INTRODUCTION_PENDING
+  INTRODUCED
+  CLOSED
+  CANCELLED
+}
+
+enum MessageChannel {
+  BUYER_BROKER
+  SELLER_BROKER
+  INTERNAL
+  SHARED
+}
+
+enum OfferParty {
+  BUYER
+  SELLER
+}
+
+enum OfferStatus {
+  SUBMITTED
+  RELAYED
+  ACCEPTED
+  REJECTED
+  COUNTERED
+  WITHDRAWN
+}
+
+enum AgreementStatus {
+  DRAFT
+  AWAITING_SELLER_REVIEW
+  ACCEPTED
+  ACTIVE
+  EXPIRED
+  TERMINATED
+}
+
+enum FeeTrigger {
+  SALE_AGREEMENT_SIGNED
+  PAYMENT_PENDING
+  EQUIPMENT_DELIVERED
+  COMPLETED
+}
+
+enum IntroductionStatus {
+  NOT_REQUESTED
+  PENDING_REVIEW
+  MORE_INFO_REQUIRED
+  APPROVED
+  COMPLETED
+  REJECTED
+  CANCELLED
+}
+
+enum ExistingRelationship {
+  NOT_DECLARED
+  NONE
+  KNOWN_BUYER
+  ACTIVE_NEGOTIATION
+}
+
+enum InspectionType {
+  VIDEO
+  ON_SITE
+  INDEPENDENT_PARTNER
+}
+
+enum InspectionOutcome {
+  SCHEDULED
+  PASSED
+  ISSUES_FOUND
+  FAILED
+  CANCELLED
+}
+
+enum TransactionStatus {
+  ENQUIRY
+  NEGOTIATION
+  INSPECTION
+  OFFER_ACCEPTED
+  INTRODUCTION_APPROVED
+  SALE_AGREEMENT_PENDING
+  SALE_AGREEMENT_SIGNED
+  PAYMENT_PENDING
+  EQUIPMENT_DELIVERED
+  COMPLETED
+  CANCELLED
+  DISPUTED
+}
+
+enum CommissionStatus {
+  NOT_YET_EARNED
+  PENDING_TRIGGER
+  DUE
+  INVOICED
+  PAID
+  OVERDUE
+  DISPUTED
+  WAIVED
+}
+
+enum CommissionType {
+  PERCENT
+  FIXED
+}
+
+enum DisputeStatus {
+  NONE
+  OPEN
+  RESOLVED
+}
+
+enum ListingFeeStatus {
+  NOT_DUE
+  DUE
+  PAID
+  OVERDUE
+  WAIVED
+}
+
+enum SwapStatus {
+  SUBMITTED
+  UNDER_REVIEW
+  FORWARDED
+  DECLINED
+  CLOSED
+}
+
+enum CashDirection {
+  NONE
+  PROPOSER_PAYS
+  PROPOSER_RECEIVES
+}
+
+enum Visibility {
+  PUBLIC
+  PRIVATE
+}
+
+enum RequestStatus {
+  OPEN
+  UNDER_REVIEW
+  MATCHED
+  CLOSED
+}
+
+enum PartnerCategory {
+  DATA_CENTRE
+  SYSTEM_INTEGRATOR
+  RESELLER
+  ITAD_SANITISATION
+  LEGAL_CUSTOMS
+  LOGISTICS
+  BANK_PAYMENT
+  OTHER
+}
+
+enum InboxStatus {
+  NEW
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum ContactType {
+  GENERAL
+  REPORT_LISTING
+  SELLER_SUPPORT
+  BUYER_SUPPORT
+}
+
+enum ServiceStatus {
+  AVAILABLE
+  AVAILABLE_THROUGH_PARTNER
+  COMING_SOON
+  CONTACT_US
+}
+
+// ───────────────────────────── Identity ─────────────────────────────
+
+model User {
+  id           String     @id @default(cuid())
+  name         String
+  email        String     @unique
+  passwordHash String
+  role         Role       @default(BUYER)
+  status       UserStatus @default(ACTIVE)
+  locale       String     @default("vi")
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  memberships        CompanyMembership[]
+  listingsCreated    Listing[]             @relation("ListingCreator")
+  listingsAssigned   Listing[]             @relation("ListingReviewer")
+  documents          Document[]
+  checks             ReviewCheck[]
+  decisions          ReviewDecision[]
+  reviewMessages     ReviewMessage[]
+  saved              SavedListing[]
+  enquiries          Enquiry[]             @relation("EnquiryBuyer")
+  brokerEnquiries    Enquiry[]             @relation("EnquiryBroker")
+  messagesAuthored   Message[]             @relation("MessageAuthor")
+  messagesApproved   Message[]             @relation("MessageApprover")
+  offersRecorded     Offer[]
+  agreementsAccepted BrokerageAgreement[]  @relation("AgreementAcceptedBy")
+  buyerAgreements    BuyerIntroAgreement[]
+  introsBrokered     Introduction[]        @relation("IntroBroker")
+  introsApproved     Introduction[]        @relation("IntroApprover")
+  disclosures        Disclosure[]          @relation("DisclosureAuthorizer")
+  inspections        Inspection[]
+  transactions       Transaction[]
+  feesRecorded       ListingFee[]
+  listingsBrokered   Listing[]             @relation("ListingBroker")
+  swaps              SwapProposal[]
+  requests           BuyerRequest[]
+  notifications      Notification[]
+  auditEvents        AuditEvent[]
+  resetTokens        PasswordResetToken[]
+  contacts           ContactSubmission[]
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Company {
+  id                 String              @id @default(cuid())
+  // Generated public alias, e.g. "VN-S-1024" (seller) / "VN-B-2048" (buyer). Shown instead of identity before introduction.
+  alias              String              @unique
+  contactName        String?
+  contactEmail       String?
+  contactPhone       String?
+  legalName          String
+  displayName        String
+  registrationNumber String
+  companyType        CompanyType
+  address            String
+  locationId         String?
+  website            String?
+  foreignInvested    Boolean             @default(false)
+  verificationStatus CompanyVerification @default(PENDING)
+  verificationNote   String?
+  isDemo             Boolean             @default(false)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+
+  location            Location?             @relation(fields: [locationId], references: [id])
+  memberships         CompanyMembership[]
+  listings            Listing[]
+  documents           Document[]
+  enquiries           Enquiry[]             @relation("EnquirySellerCompany")
+  buyerEnquiries      Enquiry[]             @relation("EnquiryBuyerCompany")
+  swaps               SwapProposal[]
+  requests            BuyerRequest[]
+  brokerageAgreements BrokerageAgreement[]
+  buyerAgreements     BuyerIntroAgreement[]
+  introsAsSeller      Introduction[]        @relation("IntroSeller")
+  introsAsBuyer       Introduction[]        @relation("IntroBuyer")
+  txAsSeller          Transaction[]         @relation("TxSeller")
+  txAsBuyer           Transaction[]         @relation("TxBuyer")
+
+  @@index([verificationStatus])
+}
+
+model CompanyMembership {
+  id                  String         @id @default(cuid())
+  userId              String
+  companyId           String
+  roleInCompany       String         @default("Owner")
+  authorizationStatus MembershipAuth @default(PENDING)
+  createdAt           DateTime       @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, companyId])
+  @@index([companyId])
+}
+
+// ───────────────────────────── Catalogue ─────────────────────────────
+
+model Category {
+  id        String         @id @default(cuid())
+  slug      String         @unique
+  nameVi    String
+  nameEn    String
+  sortOrder Int            @default(0)
+  active    Boolean        @default(true)
+  listings  Listing[]
+  requests  BuyerRequest[]
+}
+
+model GpuModel {
+  id               String         @id @default(cuid())
+  name             String         @unique
+  manufacturer     Manufacturer
+  memoryGb         Int?
+  // Configurable policy flag: listings with this model require case-by-case
+  // export-control review by a human. It is NOT a statement that a licence is required.
+  exportReviewFlag Boolean        @default(false)
+  sortOrder        Int            @default(0)
+  active           Boolean        @default(true)
+  listings         Listing[]
+  requests         BuyerRequest[]
+}
+
+model Location {
+  id        String         @id @default(cuid())
+  code      String         @unique
+  nameVi    String
+  nameEn    String
+  sortOrder Int            @default(0)
+  active    Boolean        @default(true)
+  companies Company[]
+  listings  Listing[]
+  requests  BuyerRequest[]
+  swaps     SwapProposal[]
+}
+
+// ───────────────────────────── Listings ─────────────────────────────
+
+model Listing {
+  id                   String            @id @default(cuid())
+  sellerCompanyId      String
+  createdById          String
+  title                String            @default("")
+  description          String            @default("")
+  contentLanguage      String            @default("vi")
+  categoryId           String?
+  manufacturer         Manufacturer?
+  gpuModelId           String?
+  gpuModelOther        String?
+  gpuQuantity          Int               @default(0)
+  gpuMemory            String?
+  serverManufacturer   String?
+  serverModel          String?
+  cpu                  String?
+  systemRam            String?
+  storage              String?
+  networking           String?
+  powerRequirements    String?
+  coolingRequirements  String?
+  condition            Condition?
+  hasKnownFaults       TriState?
+  knownDefects         String?
+  usageDetails         String?
+  equipmentAge         String?
+  locationId           String?
+  inVietnam            TriState?
+  ownership            OwnershipAnswer?
+  encumbrance          Encumbrance?
+  customsStatus        CustomsStatus?
+  customsNotes         String?
+  // Private: never rendered on public pages. Public pages show a masked form only.
+  serialNumbers        String?
+  priceVnd             BigInt?
+  priceOnRequest       Boolean           @default(false)
+  priceIllustrative    Boolean           @default(false)
+  currency             String            @default("VND")
+  transactionType      TransactionType?
+  warrantyStatus       WarrantyStatus?
+  warrantyDetails      String?
+  deliveryOptions      String?
+  installationOptions  String?
+  platformRole         PlatformRole      @default(INTERMEDIARY)
+  publicationStatus    PublicationStatus @default(DRAFT)
+  reviewStatus         ReviewStatus      @default(NOT_STARTED)
+  // Reasons the policy engine flagged this listing for internal hold/review (neutral, not accusations)
+  reviewFlags          String[]          @default([])
+  exportReviewRequired Boolean           @default(false)
+  assignedReviewerId   String?
+  // Broker who handles enquiries for this listing (default for new enquiries)
+  brokerId             String?
+  escalated            Boolean           @default(false)
+  escalationNote       String?
+  isDemo               Boolean           @default(false)
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+  submittedAt          DateTime?
+  publishedAt          DateTime?
+  lastVerifiedAt       DateTime?
+
+  sellerCompany    Company               @relation(fields: [sellerCompanyId], references: [id])
+  createdBy        User                  @relation("ListingCreator", fields: [createdById], references: [id])
+  assignedReviewer User?                 @relation("ListingReviewer", fields: [assignedReviewerId], references: [id])
+  broker           User?                 @relation("ListingBroker", fields: [brokerId], references: [id])
+  category         Category?             @relation(fields: [categoryId], references: [id])
+  gpuModel         GpuModel?             @relation(fields: [gpuModelId], references: [id])
+  location         Location?             @relation(fields: [locationId], references: [id])
+  images           ListingImage[]
+  documents        Document[]
+  checks           ReviewCheck[]
+  decisions        ReviewDecision[]
+  messages         ReviewMessage[]
+  saved            SavedListing[]
+  enquiries        Enquiry[]
+  swaps            SwapProposal[]
+  reports          ContactSubmission[]
+  agreements       BrokerageAgreement[]
+  buyerAgreements  BuyerIntroAgreement[]
+  introductions    Introduction[]
+  inspections      Inspection[]
+  transactions     Transaction[]
+  fees             ListingFee[]
+
+  @@index([publicationStatus, publishedAt])
+  @@index([sellerCompanyId])
+  @@index([categoryId])
+  @@index([gpuModelId])
+  @@index([locationId])
+  @@index([priceVnd])
+}
+
+model ListingImage {
+  id             String        @id @default(cuid())
+  listingId      String
+  storageKey     String        @unique
+  contentType    String
+  altText        String        @default("")
+  sortOrder      Int           @default(0)
+  approvalStatus ImageApproval @default(PENDING)
+  // Stock/illustrative image (e.g. demo data) — labelled "not the actual unit" with credit
+  isIllustrative Boolean       @default(false)
+  credit         String?
+  createdAt      DateTime      @default(now())
+  listing        Listing       @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@index([listingId, sortOrder])
+}
+
+model Document {
+  id               String          @id @default(cuid())
+  listingId        String?
+  companyId        String?
+  type             DocumentType
+  storageKey       String          @unique
+  originalFilename String
+  contentType      String
+  size             Int
+  uploadedById     String
+  uploadedAt       DateTime        @default(now())
+  reviewStatus     DocReviewStatus @default(PENDING)
+  retentionStatus  RetentionStatus @default(ACTIVE)
+
+  listing    Listing? @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  company    Company? @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  uploadedBy User     @relation(fields: [uploadedById], references: [id])
+
+  @@index([listingId])
+  @@index([companyId])
+  @@index([reviewStatus])
+}
+
+// ───────────────────────────── Review ─────────────────────────────
+
+model ReviewCheck {
+  id            String      @id @default(cuid())
+  listingId     String
+  checkType     CheckType
+  status        CheckStatus @default(NOT_STARTED)
+  reviewerId    String?
+  reviewedAt    DateTime?
+  internalNotes String?
+  evidenceRef   String?
+  // Reviewer explicitly enables the public badge. Shown only when status = PASSED.
+  publicBadge   Boolean     @default(false)
+  nextReviewAt  DateTime?
+  updatedAt     DateTime    @updatedAt
+
+  listing  Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  reviewer User?   @relation(fields: [reviewerId], references: [id])
+
+  @@unique([listingId, checkType])
+}
+
+enum DecisionKind {
+  RECOMMENDATION
+  DECISION
+}
+
+model ReviewDecision {
+  id        String        @id @default(cuid())
+  listingId String
+  actorId   String
+  kind      DecisionKind  @default(DECISION)
+  outcome   ReviewOutcome
+  reason    String?
+  override  Boolean       @default(false)
+  createdAt DateTime      @default(now())
+
+  listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  actor   User    @relation(fields: [actorId], references: [id])
+
+  @@index([listingId, createdAt])
+}
+
+// Messages between reviewers and the seller (requests for information and replies)
+model ReviewMessage {
+  id        String   @id @default(cuid())
+  listingId String
+  authorId  String
+  fromStaff Boolean
+  body      String
+  createdAt DateTime @default(now())
+
+  listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  author  User    @relation(fields: [authorId], references: [id])
+
+  @@index([listingId, createdAt])
+}
+
+model BadgeDefinition {
+  checkType    CheckType @id
+  nameVi       String
+  nameEn       String
+  meaningVi    String
+  meaningEn    String
+  notMeaningVi String
+  notMeaningEn String
+  sortOrder    Int       @default(0)
+}
+
+// ───────────────────────────── Buyer activity ─────────────────────────────
+
+model SavedListing {
+  userId    String
+  listingId String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@id([userId, listingId])
+}
+
+// A buyer enquiry is a broker-managed case ("deal"). Buyer and seller never message each
+// other directly before an authorised introduction; all traffic goes through the broker.
+model Enquiry {
+  id                String        @id @default(cuid())
+  reference         String        @unique // e.g. ENQ-2026-0001
+  listingId         String
+  buyerId           String
+  buyerCompanyId    String?
+  sellerCompanyId   String
+  brokerId          String?
+  message           String
+  status            EnquiryStatus @default(NEW)
+  // Seller-side visibility: the seller sees the case (under the buyer alias) only once the broker opens the seller channel.
+  sellerChannelOpen Boolean       @default(false)
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  listing         Listing               @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  buyer           User                  @relation("EnquiryBuyer", fields: [buyerId], references: [id])
+  buyerCompany    Company?              @relation("EnquiryBuyerCompany", fields: [buyerCompanyId], references: [id])
+  sellerCompany   Company               @relation("EnquirySellerCompany", fields: [sellerCompanyId], references: [id])
+  broker          User?                 @relation("EnquiryBroker", fields: [brokerId], references: [id])
+  messages        Message[]
+  offers          Offer[]
+  buyerAgreements BuyerIntroAgreement[]
+  introductions   Introduction[]
+  inspections     Inspection[]
+  transaction     Transaction?
+
+  @@index([buyerId])
+  @@index([sellerCompanyId, status])
+  @@index([brokerId, status])
+}
+
+model Message {
+  id                 String         @id @default(cuid())
+  enquiryId          String
+  channel            MessageChannel
+  authorId           String
+  body               String
+  // When the broker relays a message to the other side, this points at the original.
+  relayOfId          String?
+  approvedById       String?
+  // Heuristic flag only (emails/phones/URLs). Not a guarantee of anonymity.
+  flaggedContactInfo Boolean        @default(false)
+  createdAt          DateTime       @default(now())
+
+  enquiry    Enquiry   @relation(fields: [enquiryId], references: [id], onDelete: Cascade)
+  author     User      @relation("MessageAuthor", fields: [authorId], references: [id])
+  approvedBy User?     @relation("MessageApprover", fields: [approvedById], references: [id])
+  relayOf    Message?  @relation("Relay", fields: [relayOfId], references: [id], onDelete: SetNull)
+  relays     Message[] @relation("Relay")
+
+  @@index([enquiryId, channel, createdAt])
+}
+
+model Offer {
+  id           String      @id @default(cuid())
+  enquiryId    String
+  fromParty    OfferParty
+  amount       BigInt
+  currency     String      @default("VND")
+  terms        String?
+  status       OfferStatus @default(SUBMITTED)
+  recordedById String
+  relayedAt    DateTime?
+  respondedAt  DateTime?
+  createdAt    DateTime    @default(now())
+
+  enquiry    Enquiry @relation(fields: [enquiryId], references: [id], onDelete: Cascade)
+  recordedBy User    @relation(fields: [recordedById], references: [id])
+
+  @@index([enquiryId, createdAt])
+}
+
+// ───────────────────────────── Brokerage ─────────────────────────────
+
+model BrokerageAgreement {
+  id                       String          @id @default(cuid())
+  reference                String          @unique // e.g. BA-2026-0001
+  sellerCompanyId          String
+  listingId                String
+  authorizedRepresentative String?
+  // Standard fee is US$100 *equivalent* per listing per month. Billing currency and basis are
+  // recorded as configured/approved by the business — no claim is made that USD billing is lawful in every case.
+  listingFeeUsdEquivalent  Int             @default(100)
+  feeCurrencyBasis         String          @default("USD-equivalent; billing currency and FX basis per invoice")
+  standardCommissionPct    Decimal         @default(5) @db.Decimal(5, 2)
+  negotiatedCommissionPct  Decimal?        @db.Decimal(5, 2)
+  negotiatedNote           String?
+  commissionPayer          String          @default("SELLER")
+  salePriceBasis           String          @default("Agreed equipment sale price")
+  taxesIncluded            Boolean         @default(false)
+  shippingIncluded         Boolean         @default(false)
+  installationIncluded     Boolean         @default(false)
+  feeTrigger               FeeTrigger      @default(SALE_AGREEMENT_SIGNED)
+  paymentDeadlineDays      Int             @default(14)
+  listingFeeCredit         Boolean         @default(false)
+  existingBuyerDeclaration String?
+  introProtectionMonths    Int?
+  startDate                DateTime?
+  endDate                  DateTime?
+  documentVersion          String
+  acceptedAt               DateTime?
+  acceptanceMethod         String?
+  acceptedById             String?
+  acceptedIp               String?
+  status                   AgreementStatus @default(DRAFT)
+  createdAt                DateTime        @default(now())
+  updatedAt                DateTime        @updatedAt
+
+  sellerCompany Company       @relation(fields: [sellerCompanyId], references: [id])
+  listing       Listing       @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  acceptedBy    User?         @relation("AgreementAcceptedBy", fields: [acceptedById], references: [id])
+  transactions  Transaction[]
+
+  @@index([listingId, status])
+}
+
+model BuyerIntroAgreement {
+  id                       String   @id @default(cuid())
+  buyerCompanyId           String?
+  buyerUserId              String
+  authorizedRepresentative String
+  listingId                String
+  enquiryId                String
+  termsVersion             String
+  acceptedAt               DateTime @default(now())
+  acceptanceMethod         String   @default("WEB_CHECKBOX")
+  brokerId                 String?
+
+  buyerCompany Company? @relation(fields: [buyerCompanyId], references: [id])
+  buyerUser    User     @relation(fields: [buyerUserId], references: [id])
+  listing      Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  enquiry      Enquiry  @relation(fields: [enquiryId], references: [id], onDelete: Cascade)
+
+  @@index([enquiryId])
+}
+
+model Introduction {
+  id                       String               @id @default(cuid())
+  enquiryId                String
+  listingId                String
+  sellerCompanyId          String
+  buyerCompanyId           String
+  brokerId                 String
+  approverId               String?
+  status                   IntroductionStatus   @default(PENDING_REVIEW)
+  purpose                  String
+  // Fields approved for disclosure in each direction (subset of DISCLOSABLE_FIELDS)
+  sellerFieldsToBuyer      String[]             @default([])
+  buyerFieldsToSeller      String[]             @default([])
+  existingRelationship     ExistingRelationship @default(NOT_DECLARED)
+  existingRelationshipNote String?
+  sellerDeclaredAt         DateTime?
+  checklist                Json?
+  agreementVersions        Json?
+  notes                    String?
+  evidenceRef              String?
+  reviewNote               String?
+  sharedChannelEnabled     Boolean              @default(false)
+  requestedAt              DateTime             @default(now())
+  approvedAt               DateTime?
+  completedAt              DateTime?
+
+  enquiry       Enquiry       @relation(fields: [enquiryId], references: [id], onDelete: Cascade)
+  listing       Listing       @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  sellerCompany Company       @relation("IntroSeller", fields: [sellerCompanyId], references: [id])
+  buyerCompany  Company       @relation("IntroBuyer", fields: [buyerCompanyId], references: [id])
+  broker        User          @relation("IntroBroker", fields: [brokerId], references: [id])
+  approver      User?         @relation("IntroApprover", fields: [approverId], references: [id])
+  disclosures   Disclosure[]
+  transactions  Transaction[]
+
+  @@index([status])
+  @@index([enquiryId])
+}
+
+// Immutable record of identity information disclosed to a party.
+model Disclosure {
+  id                 String   @id @default(cuid())
+  introductionId     String
+  authorizedById     String
+  recipientCompanyId String
+  subjectCompanyId   String
+  fields             String[]
+  snapshot           Json
+  createdAt          DateTime @default(now())
+
+  introduction Introduction @relation(fields: [introductionId], references: [id], onDelete: Cascade)
+  authorizedBy User         @relation("DisclosureAuthorizer", fields: [authorizedById], references: [id])
+
+  @@index([recipientCompanyId])
+}
+
+model Inspection {
+  id            String            @id @default(cuid())
+  enquiryId     String
+  listingId     String
+  brokerId      String
+  type          InspectionType
+  scheduledAt   DateTime
+  // Private: visible to broker/admin; shared with participants only when shareLocation = true
+  location      String?
+  shareLocation Boolean           @default(false)
+  participants  String?
+  provider      String?
+  reportRef     String?
+  outcome       InspectionOutcome @default(SCHEDULED)
+  followUp      String?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  enquiry Enquiry @relation(fields: [enquiryId], references: [id], onDelete: Cascade)
+  listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  broker  User    @relation(fields: [brokerId], references: [id])
+
+  @@index([scheduledAt])
+}
+
+model Transaction {
+  id                 String            @id @default(cuid())
+  reference          String            @unique // e.g. TX-2026-0001
+  enquiryId          String            @unique
+  listingId          String
+  sellerCompanyId    String
+  buyerCompanyId     String?
+  brokerId           String
+  agreementId        String?
+  introductionId     String?
+  salePrice          BigInt?
+  currency           String            @default("VND")
+  commissionType     CommissionType    @default(PERCENT)
+  commissionPct      Decimal?          @db.Decimal(5, 2)
+  commissionFixed    BigInt?
+  commissionBasis    String            @default("Agreed equipment sale price")
+  commissionAmount   BigInt?
+  listingFeeCredit   BigInt?
+  feePayer           String            @default("SELLER")
+  feeTrigger         FeeTrigger        @default(SALE_AGREEMENT_SIGNED)
+  status             TransactionStatus @default(ENQUIRY)
+  completionEvidence String?
+  invoiceRef         String?
+  commissionStatus   CommissionStatus  @default(NOT_YET_EARNED)
+  disputeStatus      DisputeStatus     @default(NONE)
+  notes              String?
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+
+  enquiry       Enquiry             @relation(fields: [enquiryId], references: [id], onDelete: Cascade)
+  listing       Listing             @relation(fields: [listingId], references: [id])
+  sellerCompany Company             @relation("TxSeller", fields: [sellerCompanyId], references: [id])
+  buyerCompany  Company?            @relation("TxBuyer", fields: [buyerCompanyId], references: [id])
+  broker        User                @relation(fields: [brokerId], references: [id])
+  agreement     BrokerageAgreement? @relation(fields: [agreementId], references: [id])
+  introduction  Introduction?       @relation(fields: [introductionId], references: [id])
+
+  @@index([status])
+  @@index([brokerId])
+}
+
+model ListingFee {
+  id             String           @id @default(cuid())
+  listingId      String
+  periodStart    DateTime
+  periodEnd      DateTime
+  dueDate        DateTime
+  usdEquivalent  Int              @default(100)
+  // Actual billing details — recorded only as configured/approved by the business.
+  billedCurrency String?
+  billedAmount   BigInt?
+  fxBasis        String?
+  invoiceRef     String?
+  taxTreatment   String?
+  status         ListingFeeStatus @default(NOT_DUE)
+  reason         String?
+  paidAt         DateTime?
+  recordedById   String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  listing    Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  recordedBy User?   @relation(fields: [recordedById], references: [id])
+
+  @@index([listingId, periodStart])
+  @@index([status])
+}
+
+model SwapProposal {
+  id                      String        @id @default(cuid())
+  proposerId              String
+  proposerCompanyId       String?
+  listingId               String?
+  offeredEquipment        String
+  offeredCondition        Condition
+  offeredDetails          String
+  offeredEstimatedValue   BigInt?
+  requestedEquipment      String
+  requestedEstimatedValue BigInt?
+  cashDirection           CashDirection @default(NONE)
+  cashAdjustment          BigInt?
+  currency                String        @default("VND")
+  preferredLocationId     String?
+  proposedTiming          String?
+  status                  SwapStatus    @default(SUBMITTED)
+  adminNotes              String?
+  createdAt               DateTime      @default(now())
+  updatedAt               DateTime      @updatedAt
+
+  proposer          User      @relation(fields: [proposerId], references: [id])
+  proposerCompany   Company?  @relation(fields: [proposerCompanyId], references: [id])
+  listing           Listing?  @relation(fields: [listingId], references: [id], onDelete: SetNull)
+  preferredLocation Location? @relation(fields: [preferredLocationId], references: [id])
+
+  @@index([proposerId])
+  @@index([status])
+}
+
+model BuyerRequest {
+  id                  String        @id @default(cuid())
+  buyerId             String
+  buyerCompanyId      String?
+  categoryId          String?
+  gpuModelId          String?
+  desiredEquipment    String
+  quantity            Int           @default(1)
+  locationId          String?
+  conditionPreference String        @default("ANY")
+  budgetMinVnd        BigInt?
+  budgetMaxVnd        BigInt?
+  hideBudget          Boolean       @default(true)
+  desiredDeliveryDate DateTime?
+  requirements        String?
+  contactPreference   String        @default("PLATFORM")
+  visibility          Visibility    @default(PRIVATE)
+  status              RequestStatus @default(OPEN)
+  adminNotes          String?
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  buyer        User      @relation(fields: [buyerId], references: [id])
+  buyerCompany Company?  @relation(fields: [buyerCompanyId], references: [id])
+  category     Category? @relation(fields: [categoryId], references: [id])
+  gpuModel     GpuModel? @relation(fields: [gpuModelId], references: [id])
+  location     Location? @relation(fields: [locationId], references: [id])
+
+  @@index([buyerId])
+  @@index([visibility, status])
+}
+
+// ───────────────────────────── Inbox / partners ─────────────────────────────
+
+model PartnerEnquiry {
+  id              String          @id @default(cuid())
+  organization    String
+  contactName     String
+  email           String
+  phone           String?
+  partnerCategory PartnerCategory
+  message         String
+  status          InboxStatus     @default(NEW)
+  adminNotes      String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@index([status])
+}
+
+model ContactSubmission {
+  id           String      @id @default(cuid())
+  type         ContactType
+  name         String
+  email        String
+  organization String?
+  subject      String?
+  message      String
+  listingId    String?
+  userId       String?
+  status       InboxStatus @default(NEW)
+  adminNotes   String?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  listing Listing? @relation(fields: [listingId], references: [id], onDelete: SetNull)
+  user    User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([type, status])
+}
+
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  title     String
+  body      String
+  link      String?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt])
+}
+
+// ───────────────────────────── Content & settings ─────────────────────────────
+
+model Service {
+  id                       String        @id @default(cuid())
+  key                      String        @unique
+  nameVi                   String
+  nameEn                   String
+  descriptionVi            String
+  descriptionEn            String
+  status                   ServiceStatus @default(CONTACT_US)
+  // A certification claim is shown only when an administrator records evidence.
+  certificationNote        String?
+  certificationEvidenceRef String?
+  // Roadmap item (e.g. GPU cloud rental) — displayed separately and never as operational
+  isFuture                 Boolean       @default(false)
+  sortOrder                Int           @default(0)
+  updatedAt                DateTime      @updatedAt
+}
+
+model ContentPage {
+  slug         String   @id
+  titleVi      String
+  titleEn      String
+  bodyVi       String
+  bodyEn       String
+  isLegalDraft Boolean  @default(true)
+  updatedById  String?
+  updatedAt    DateTime @updatedAt
+}
+
+model SiteSetting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}
+
+model AuditEvent {
+  id           String   @id @default(cuid())
+  actorId      String?
+  action       String
+  resourceType String
+  resourceId   String?
+  reason       String?
+  metadata     Json?
+  createdAt    DateTime @default(now())
+  actor        User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([resourceType, resourceId])
+  @@index([createdAt])
+  @@index([actorId])
+}

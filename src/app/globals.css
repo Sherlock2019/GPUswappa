@@ -1,0 +1,104 @@
+@import "tailwindcss";
+
+@theme {
+  --color-navy-950: #050b1f;
+  --color-navy-900: #0a1633;
+  --color-navy-800: #0f2147;
+  --color-navy-700: #18305f;
+  --color-navy-600: #234079;
+  --color-electric-600: #1d5bff;
+  --color-electric-500: #2f6bff;
+  --color-electric-400: #5a8bff;
+  --color-electric-100: #e3ebff;
+  --color-teal-600: #0d9488;
+  --color-teal-500: #14b8a6;
+  --color-teal-400: #2dd4bf;
+  --color-teal-100: #ccfbf1;
+  --font-sans: "Be Vietnam Pro", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-slate-50 text-slate-900 antialiased;
+  }
+  :focus-visible {
+    outline: 3px solid var(--color-electric-500);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+  h1, h2, h3, h4 {
+    @apply tracking-tight text-navy-900;
+  }
+}
+
+@layer components {
+  .container-page {
+    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60;
+  }
+  .btn-primary {
+    @apply btn bg-electric-600 text-white hover:bg-electric-500;
+  }
+  .btn-secondary {
+    @apply btn border border-slate-300 bg-white text-navy-900 hover:border-electric-500 hover:text-electric-600;
+  }
+  .btn-teal {
+    @apply btn bg-teal-600 text-white hover:bg-teal-500;
+  }
+  .btn-danger {
+    @apply btn bg-red-700 text-white hover:bg-red-600;
+  }
+  .btn-ghost {
+    @apply btn text-slate-700 hover:bg-slate-100;
+  }
+  .btn-sm {
+    @apply px-3 py-1.5 text-xs;
+  }
+  .input {
+    @apply block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-electric-500 focus:outline-none focus:ring-2 focus:ring-electric-500/30 aria-[invalid=true]:border-red-600;
+  }
+  .label {
+    @apply mb-1 block text-sm font-medium text-slate-800;
+  }
+  .help {
+    @apply mt-1 text-xs text-slate-500;
+  }
+  .card {
+    @apply rounded-xl border border-slate-200 bg-white shadow-sm;
+  }
+  .table {
+    @apply w-full text-left text-sm;
+  }
+  .table th {
+    @apply border-b border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-600;
+  }
+  .table td {
+    @apply border-b border-slate-100 px-3 py-2 align-top;
+  }
+  .prose-legal h2 {
+    @apply mt-6 mb-2 text-lg font-semibold;
+  }
+  .prose-legal p {
+    @apply mb-3 leading-relaxed text-slate-700;
+  }
+  .prose-legal ul {
+    @apply mb-3 list-disc pl-6 text-slate-700;
+  }
+  .grid-bg {
+    background-image: linear-gradient(rgba(90, 139, 255, 0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(90, 139, 255, 0.08) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
