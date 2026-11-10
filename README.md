@@ -40,6 +40,17 @@ Node ≥ 20 (tested 24), npm, Docker (for PostgreSQL). Ports: app **3410**, Post
 
 ## Install & run
 
+**One command:**
+
+```bash
+./start.sh            # creates .env, starts PostgreSQL, installs deps, migrates, seeds (first run), builds, serves on :3410
+./start.sh --dev      # hot-reload dev server
+./start.sh --reset    # wipe DB + re-seed demo data, then start
+./start.sh --stop     # stop the app (by port 3410); --stop-all also stops the DB container
+```
+
+Manual steps (equivalent):
+
 ```bash
 cp .env.example .env            # then set SESSION_SECRET (openssl rand -hex 32)
 npm install
