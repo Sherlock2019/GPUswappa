@@ -1,17 +1,27 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { PHOTOS, type PhotoKey } from "@/lib/photos";
 
-export function PageHeader({ title, subtitle, actions, eyebrow }: { title: string; subtitle?: string; actions?: ReactNode; eyebrow?: string }) {
+/** Page title banner over a (credited, decorative) data-centre photo. */
+export function PageHeader({ title, subtitle, actions, eyebrow, photo = "dcRacks" }: { title: string; subtitle?: string; actions?: ReactNode; eyebrow?: string; photo?: PhotoKey }) {
+  const p = PHOTOS[photo];
   return (
-    <div className="border-b border-slate-200 bg-white">
-      <div className="container-page flex flex-col gap-4 py-8 md:flex-row md:items-end md:justify-between">
+    <div className="relative overflow-hidden bg-navy-950">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={p.src} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-cover opacity-30" />
+      <div className="absolute inset-0 bg-gradient-to-r from-navy-950 via-navy-950/90 to-navy-900/40" />
+      <div className="grid-bg absolute inset-0 opacity-50" />
+      <div className="container-page relative flex flex-col gap-5 py-12 md:flex-row md:items-end md:justify-between">
         <div>
-          {eyebrow && <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-teal-600">{eyebrow}</p>}
-          <h1 className="text-2xl font-bold sm:text-3xl">{title}</h1>
-          {subtitle && <p className="mt-2 max-w-3xl text-slate-600">{subtitle}</p>}
+          {eyebrow && <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-teal-400">{eyebrow}</p>}
+          <h1 className="text-3xl font-bold leading-tight !text-white sm:text-4xl">{title}</h1>
+          {subtitle && <p className="mt-3 max-w-3xl text-base text-slate-300 sm:text-lg">{subtitle}</p>}
         </div>
         {actions && <div className="flex flex-wrap gap-2">{actions}</div>}
       </div>
+      <p className="absolute bottom-1 right-3 text-[10px] text-slate-500">
+        {p.author} · {p.license}
+      </p>
     </div>
   );
 }

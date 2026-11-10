@@ -31,7 +31,8 @@ async function main() {
   console.log("✓ reference data (categories, models, provinces, badges, services, legal drafts)");
 
   if (await prisma.user.findUnique({ where: { email: "admin@example.com" } })) {
-    console.log("Demo data already present — skipping. Run `npm run db:reset` to start fresh.");
+    console.log("Demo data already present — skipping listings/cases. Run `npm run db:reset` to start fresh.");
+    await seedExtras(password);
     return;
   }
 
@@ -552,7 +553,203 @@ async function main() {
 
   await prisma.buyerRequest.create({ data: { buyerId: buyer.id, buyerCompanyId: lotus.id, categoryId: cat["gpu-servers"], gpuModelId: model["NVIDIA H200"].id, desiredEquipment: "1–2× 8-GPU H200 or H100 servers (demo request)", quantity: 16, locationId: loc["ho-chi-minh"], conditionPreference: "ANY", budgetMinVnd: 5_000_000_000n, budgetMaxVnd: 12_000_000_000n, hideBudget: true, requirements: "InfiniBand NDR preferred (fictional demo request).", visibility: "PUBLIC" } });
   console.log("✓ demo buyer request");
-  console.log("\nDemo accounts (password = SEED_DEMO_PASSWORD): admin@, reviewer@, broker@, broker2@, seller@, seller2@, buyer@ example.com");
+  await seedExtras(password);
+}
+
+/**
+ * Idempotent extras (safe to run on an existing database):
+ *  - 10 ready-to-use fictional SELLER accounts (seller@, seller2@ … seller10@) and
+ *    10 BUYER accounts (buyer@, buyer2@ … buyer10@), each with a VERIFIED fictional company + alias;
+ *  - a clearly-labelled DEMO USD/VND rate so the English site can show indicative USD prices
+ *    (only set if no rate is configured; replace it in Admin › Content).
+ */
+async function seedExtras(password: string) {
+  const fxDefaults: Record<string, string> = {
+    "fx.usdVndRate": "26300",
+    "fx.rateDate": new Date().toISOString().slice(0, 10),
+    "fx.source": "DEMO rate for illustration only — replace with an official reference rate in Admin › Content",
+  };
+  if (!(await prisma.siteSetting.findUnique({ where: { key: "fx.usdVndRate" } }))) {
+    for (const [key, value] of Object.entries(fxDefaults)) await prisma.siteSetting.upsert({ where: { key }, create: { key, value }, update: {} });
+    console.log("✓ demo USD/VND rate (labelled as demo)");
+  }
+
+  const loc = Object.fromEntries((await prisma.location.findMany()).map((l) => [l.code, l.id]));
+  const hash = await bcrypt.hash(password, 12);
+  const cities = ["ho-chi-minh", "ha-noi", "da-nang", "hai-phong", "can-tho", "bac-ninh", "dong-nai", "khanh-hoa", "hue", "quang-ninh"];
+  type Co = [string, string, Prisma.CompanyCreateInput["companyType"]];
+  // 3 additional used-GPU sellers (+ seller@, seller2@ = 5) and 4 additional used-GPU buyers (+ buyer@ = 5)
+  const sellers: Co[] = [
+    ["Kim Long Data Centre", "Công ty TNHH Trung tâm Dữ liệu Kim Long", "DATA_CENTRE"],
+    ["Red River Cloud", "Công ty CP Đám mây Sông Hồng", "CLOUD_PROVIDER"],
+    ["Truong Son Compute", "Công ty TNHH Điện toán Trường Sơn", "SYSTEM_INTEGRATOR"],
+  ];
+  const sellerListings: { model: string; qty: number; title: string; price: bigint; loc: string; photo: PhotoKey; mem: string }[] = [
+    { model: "NVIDIA A100", qty: 8, title: "Used 8× NVIDIA A100 80GB SXM server — Ho Chi Minh City (demo)", price: 3_400_000_000n, loc: "ho-chi-minh", photo: "dcRacks", mem: "80 GB HBM2e / GPU" },
+    { model: "NVIDIA H100", qty: 4, title: "Máy chủ 4× NVIDIA H100 PCIe 80GB đã qua sử dụng — Hà Nội (demo)", price: 3_100_000_000n, loc: "ha-noi", photo: "h100Lineup", mem: "80 GB HBM2e / GPU" },
+    { model: "NVIDIA L40S", qty: 8, title: "Used 8× NVIDIA L40S inference server — Da Nang (demo)", price: 1_450_000_000n, loc: "da-nang", photo: "dcServerRoom", mem: "48 GB GDDR6 / GPU" },
+  ];
+  const buyers: Co[] = [
+    ["Saigon NLP", "Công ty TNHH Xử lý Ngôn ngữ Sài Gòn", "AI_STARTUP"],
+    ["Hanoi Research Institute of Computing", "Viện Nghiên cứu Điện toán Hà Nội", "RESEARCH_INSTITUTION"],
+    ["Golden Star Fintech", "Công ty CP Công nghệ Tài chính Sao Vàng", "ENTERPRISE"],
+    ["Dragon Bridge Robotics", "Công ty CP Robot Cầu Rồng", "AI_STARTUP"],
+  ];
+  const buyerWants = [
+    "Used 8-GPU A100 or H100 server for LLM fine-tuning (demo request)",
+    "2–4 used H100/H200 servers for a university research cluster (demo request)",
+    "Used 4× L40S or A100 node for inference, budget-limited (demo request)",
+    "Used GPU workstation(s), 4× RTX 4090 or L40S, for robotics simulation (demo request)",
+  ];
+  const make = async (email: string, role: "SELLER" | "BUYER", alias: string, [display, legal, type]: Co, i: number) => {
+    if (await prisma.user.findUnique({ where: { email } })) return null;
+    const user = await prisma.user.create({ data: { email, name: `${display} — Demo User (fictional)`, role, passwordHash: hash } });
+    await prisma.company.create({
+      data: {
+        alias,
+        legalName: `${legal} (hư cấu / fictional)`,
+        displayName: `${display} (demo)`,
+        registrationNumber: `DEMO-${alias.slice(-4)}`,
+        companyType: type,
+        address: `Số ${i + 10} Đường Demo (fictional address)`,
+        locationId: loc[cities[i % cities.length]],
+        website: `https://${display.toLowerCase().replace(/[^a-z]+/g, "-")}.example`,
+        contactName: `Demo Contact ${i + 1}`,
+        contactEmail: email.replace("@example.com", ".contact@example.com"),
+        contactPhone: `0000 000 ${String(100 + i).padStart(3, "0")}`,
+        isDemo: true,
+        verificationStatus: "VERIFIED",
+        memberships: { create: { userId: user.id, roleInCompany: "Director", authorizationStatus: "AUTHORIZED" } },
+      },
+    });
+    return { user, company: await prisma.company.findUniqueOrThrow({ where: { alias } }) };
+  };
+
+  const reviewer = await prisma.user.findUnique({ where: { email: "reviewer@example.com" } });
+  const broker = await prisma.user.findUnique({ where: { email: "broker@example.com" } });
+  const admin = await prisma.user.findUnique({ where: { email: "admin@example.com" } });
+  const cat = await prisma.category.findUniqueOrThrow({ where: { slug: "gpu-servers" } });
+  let created = 0;
+
+  for (const [i, s] of sellers.entries()) {
+    const r = await make(`seller${i + 3}@example.com`, "SELLER", `VN-S-${2103 + i}`, s, i);
+    if (!r) continue;
+    created++;
+    // One published USED data-centre GPU listing per new seller, with matching fictional review records.
+    const d = sellerListings[i];
+    const model = await prisma.gpuModel.findUniqueOrThrow({ where: { name: d.model } });
+    const publishedAt = new Date(Date.now() - (6 + i * 4) * 86400000);
+    const passed: CheckType[] = ["SELLER_IDENTITY", "SELLER_AUTHORITY", "OWNERSHIP_EVIDENCE", "FINANCING_LEASE", "CUSTOMS_STATUS", "EXPORT_CONTROL", "TECHNICAL_CONDITION"];
+    const all: CheckType[] = [...passed, "ASSET_IDENTIFICATION", "WARRANTY_EVIDENCE", "DATA_SANITISATION"];
+    const listing = await prisma.listing.create({
+      data: {
+        sellerCompanyId: r.company.id,
+        createdById: r.user.id,
+        title: d.title,
+        contentLanguage: /[ăâđêôơư]/i.test(d.title) ? "vi" : "en",
+        description: "FICTIONAL DEMO DATA / DỮ LIỆU DEMO HƯ CẤU. Used data-centre GPU server, decommissioned after a capacity upgrade. Burn-in report available for review; inspection by video or on site through the broker.",
+        categoryId: cat.id,
+        manufacturer: "NVIDIA",
+        gpuModelId: model.id,
+        gpuQuantity: d.qty,
+        gpuMemory: d.mem,
+        serverModel: `${d.qty}-GPU server (generic)`,
+        cpu: "2× x86 server CPU",
+        systemRam: "1 TB DDR4/DDR5",
+        storage: "NVMe SSDs",
+        networking: "200/400G fabric",
+        condition: "USED",
+        hasKnownFaults: "NO",
+        usageDetails: "18–30 months in a temperature-controlled hall (illustrative)",
+        locationId: loc[d.loc],
+        inVietnam: "YES",
+        ownership: "OWNS",
+        encumbrance: "NONE",
+        customsStatus: "CLEARED_DOMESTIC",
+        serialNumbers: "DEMO-SN-PRIVATE (fictional)",
+        priceVnd: d.price,
+        priceIllustrative: true,
+        transactionType: i === 2 ? "SALE_OR_SWAP" : "SALE",
+        warrantyStatus: "SELLER",
+        warrantyDetails: "3-month seller warranty (illustrative)",
+        deliveryOptions: "Domestic delivery by agreement",
+        platformRole: "INTERMEDIARY",
+        publicationStatus: "PUBLISHED",
+        reviewStatus: "COMPLETED",
+        exportReviewRequired: model.exportReviewFlag,
+        reviewFlags: model.exportReviewFlag ? ["EXPORT_REVIEW"] : [],
+        assignedReviewerId: reviewer?.id,
+        brokerId: broker?.id,
+        isDemo: true,
+        submittedAt: publishedAt,
+        publishedAt,
+        lastVerifiedAt: publishedAt,
+        images: {
+          create: {
+            storageKey: await storage().put(await fs.readFile(path.join(process.cwd(), "public", PHOTOS[d.photo].src)), "jpg"),
+            contentType: "image/jpeg",
+            altText: `${PHOTOS[d.photo].altEn} — illustrative image, not the actual unit`,
+            approvalStatus: "APPROVED",
+            isIllustrative: true,
+            credit: `${PHOTOS[d.photo].author}, ${PHOTOS[d.photo].license} — ${PHOTOS[d.photo].sourceUrl}`,
+          },
+        },
+        checks: {
+          create: all.map((ct) => ({
+            checkType: ct,
+            status: passed.includes(ct) ? ("PASSED" as const) : ("NOT_STARTED" as const),
+            reviewerId: passed.includes(ct) ? reviewer?.id : null,
+            reviewedAt: passed.includes(ct) ? publishedAt : null,
+            evidenceRef: passed.includes(ct) ? `DEMO-EVID-${ct} (fictional)` : null,
+            publicBadge: passed.includes(ct) && ct !== "FINANCING_LEASE",
+          })),
+        },
+        agreements: {
+          create: {
+            reference: `BA-2026-D${2103 + i}`,
+            sellerCompanyId: r.company.id,
+            authorizedRepresentative: `${s[0]} Director (fictional)`,
+            documentVersion: "BA-DRAFT-2026-11",
+            acceptedAt: publishedAt,
+            acceptanceMethod: "WEB_CLICKWRAP",
+            acceptedById: r.user.id,
+            status: "ACTIVE",
+            startDate: publishedAt,
+            endDate: new Date(publishedAt.getTime() + 182 * 86400000),
+          },
+        },
+        fees: { create: { periodStart: publishedAt, periodEnd: new Date(publishedAt.getTime() + 30 * 86400000), dueDate: new Date(publishedAt.getTime() + 14 * 86400000), usdEquivalent: 100, status: "DUE" } },
+      },
+    });
+    if (admin) await prisma.reviewDecision.create({ data: { listingId: listing.id, actorId: admin.id, kind: "DECISION", outcome: "APPROVE", reason: "Demo approval (fictional)." } });
+  }
+
+  for (const [i, b] of buyers.entries()) {
+    const r = await make(`buyer${i + 2}@example.com`, "BUYER", `VN-B-${4102 + i}`, b, i);
+    if (!r) continue;
+    created++;
+    await prisma.buyerRequest.create({
+      data: {
+        buyerId: r.user.id,
+        buyerCompanyId: r.company.id,
+        categoryId: cat.id,
+        desiredEquipment: buyerWants[i],
+        quantity: [8, 16, 4, 4][i],
+        locationId: loc[cities[i % cities.length]],
+        conditionPreference: "USED",
+        budgetMinVnd: [1_500_000_000n, 4_000_000_000n, 500_000_000n, 250_000_000n][i],
+        budgetMaxVnd: [3_500_000_000n, 12_000_000_000n, 1_500_000_000n, 600_000_000n][i],
+        hideBudget: i % 2 === 0,
+        requirements: "Fictional demo request — used equipment located in Vietnam, inspection before purchase.",
+        visibility: "PUBLIC",
+      },
+    });
+  }
+  if (created) console.log(`✓ ${created} additional used-GPU demo accounts (3 sellers with published used listings, 4 buyers with used-GPU requests)`);
+  console.log("\nDemo accounts (password = SEED_DEMO_PASSWORD):");
+  console.log("  staff:   admin@, reviewer@, broker@, broker2@ example.com");
+  console.log("  used-GPU sellers (5): seller@, seller2@, seller3@, seller4@, seller5@ example.com");
+  console.log("  used-GPU buyers  (5): buyer@, buyer2@, buyer3@, buyer4@, buyer5@ example.com");
 }
 
 main()

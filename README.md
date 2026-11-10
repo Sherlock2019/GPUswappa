@@ -74,8 +74,10 @@ Password = `SEED_DEMO_PASSWORD` from your `.env` (the seed refuses to run when `
 | reviewer@example.com | Reviewer | assigned to demo listings |
 | broker@example.com | Broker | assigned to the demo cases ENQ-2026-0001/0002 |
 | broker2@example.com | Broker | *unrelated* broker — cannot see those cases |
-| seller@example.com / seller2@example.com | Seller | VN-S-1024 / VN-S-3307 |
-| buyer@example.com | Buyer | VN-B-2048 |
+| seller@, seller2@, seller3@, seller4@, seller5@example.com | Seller (used GPUs) | VN-S-1024, VN-S-3307, VN-S-2103…2105 — each has published used listings |
+| buyer@, buyer2@, buyer3@, buyer4@, buyer5@example.com | Buyer (used GPUs) | VN-B-2048, VN-B-4102…4105 — verified companies, public used-GPU requests |
+
+All demo companies are VERIFIED and fictional. English pages show indicative USD prices using a **demo** USD/VND rate set by the seed (replace it in Admin › Content); Vietnamese pages show VND.
 
 Demo case **ENQ-2026-0001** shows a completed introduction and transaction **TX-2026-0001** (illustrative US$80,000 × 5 % = US$4,000 commission; listing fees shown separately).
 

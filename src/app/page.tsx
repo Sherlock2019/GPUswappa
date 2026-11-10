@@ -116,16 +116,25 @@ export default async function HomePage() {
 
       {/* ── New data-centre GPU market ── */}
       <section className="container-page pt-16">
-        <div className="card grid items-center gap-6 overflow-hidden p-6 md:grid-cols-[1fr_auto]">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-teal-600">{t("nav.newMarket")}</p>
-            <h2 className="mt-1 text-2xl font-bold">{t("newMarket.title")}</h2>
-            <p className="mt-2 max-w-3xl text-slate-700">{t("newMarket.subtitle")}</p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Link href="/new-gpus" className="btn-primary">{t("common.learnMore")}</Link>
-            <Link href="/requests?condition=NEW_OR_UNUSED#new" className="btn-secondary">{t("newMarket.cta")}</Link>
-          </div>
+        <div className="grid gap-5 md:grid-cols-2">
+          {([
+            ["/used-gpus", "nav.usedMarket", "usedMarket.title", "usedMarket.subtitle", PHOTOS.dcServerRoom.src, "/sell", "usedMarket.sellCta"],
+            ["/new-gpus", "nav.newMarket", "newMarket.title", "newMarket.subtitle", PHOTOS.h100Standing.src, "/requests?condition=NEW_OR_UNUSED#new", "newMarket.cta"],
+          ] as const).map(([href, eyebrow, title, sub, img, ctaHref, cta]) => (
+            <div key={href} className="relative overflow-hidden rounded-2xl bg-navy-950 p-6 text-white">
+              <img src={img} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-cover opacity-25" />
+              <div className="absolute inset-0 bg-gradient-to-t from-navy-950 via-navy-950/80 to-navy-900/30" />
+              <div className="relative">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-400">{t(eyebrow)}</p>
+                <h2 className="mt-2 text-2xl font-bold !text-white">{t(title)}</h2>
+                <p className="mt-2 text-sm text-slate-300">{t(sub)}</p>
+                <div className="mt-5 flex flex-wrap gap-2">
+                  <Link href={href} className="btn-primary">{t("common.learnMore")}</Link>
+                  <Link href={ctaHref} className="btn border border-white/30 text-white hover:bg-white/10">{t(cta)}</Link>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </section>
 

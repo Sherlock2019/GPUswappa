@@ -5,7 +5,7 @@ import type { Settings } from "@/lib/settings";
 export function SiteFooter({ t, settings }: { t: T; settings: Settings }) {
   const np = t("common.notProvided");
   const cols: [string, [string, string][]][] = [
-    [t("footer.marketplace"), [["/marketplace", t("nav.marketplace")], ["/new-gpus", t("nav.newMarket")], ["/sell", t("nav.sell")], ["/requests", t("nav.requests")], ["/swap", t("nav.swap")], ["/services", t("nav.services")]]],
+    [t("footer.marketplace"), [["/used-gpus", t("nav.usedMarket")], ["/new-gpus", t("nav.newMarket")], ["/marketplace", t("nav.marketplace")], ["/sell", t("nav.sell")], ["/requests", t("nav.requests")], ["/swap", t("nav.swap")], ["/services", t("nav.services")]]],
     [t("footer.company"), [["/about", t("nav.about")], ["/why", t("nav.why")], ["/how-it-works", t("nav.howItWorks")], ["/trust", t("nav.trust")], ["/contact", t("nav.contact")], ["/credits", t("footer.credits")]]],
     [
       t("footer.legal"),

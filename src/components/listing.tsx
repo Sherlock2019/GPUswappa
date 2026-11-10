@@ -3,15 +3,26 @@ import Link from "next/link";
 import type { T, Locale } from "@/lib/i18n";
 import { lname } from "@/lib/i18n";
 import type { PublicListing } from "@/lib/services/listings";
-import { formatDate, formatVnd } from "@/lib/format";
+import { formatDate, formatUsd, formatVnd } from "@/lib/format";
+import { fxInfo } from "@/lib/settings";
+import { getSettingsCached } from "@/lib/settings-server";
 import { PHOTOS, type PhotoKey } from "@/lib/photos";
 import { GpuPlaceholder, Pill } from "./ui";
 
-export function PriceTag({ l, t, locale, large = false }: { l: Pick<PublicListing, "priceVnd" | "priceOnRequest" | "priceIllustrative">; t: T; locale: Locale; large?: boolean }) {
+/**
+ * Price display: Vietnamese → VND. English → USD converted from VND, but ONLY when an exchange
+ * rate, rate date and source are configured (Admin › Content); otherwise English falls back to VND.
+ * The VND amount and the rate date are always shown alongside a converted USD figure.
+ */
+export async function PriceTag({ l, t, locale, large = false }: { l: Pick<PublicListing, "priceVnd" | "priceOnRequest" | "priceIllustrative">; t: T; locale: Locale; large?: boolean }) {
+  const onRequest = l.priceOnRequest || l.priceVnd === null;
+  const fx = locale === "en" && !onRequest ? fxInfo(await getSettingsCached()) : null;
+  const main = onRequest ? t("common.priceOnRequest") : fx ? formatUsd(Math.round(l.priceVnd! / fx.rate / 100) * 100, "en") : formatVnd(l.priceVnd, locale);
   return (
     <div>
-      <p className={`font-bold text-navy-900 ${large ? "text-3xl" : "text-lg"}`}>{l.priceOnRequest || l.priceVnd === null ? t("common.priceOnRequest") : formatVnd(l.priceVnd, locale)}</p>
-      {l.priceIllustrative && !l.priceOnRequest && <p className="text-xs font-medium text-amber-700">{t("common.illustrativePrice")}</p>}
+      <p className={`font-bold text-navy-900 ${large ? "text-3xl" : "text-lg"}`}>{main}</p>
+      {fx && <p className={`${large ? "text-sm" : "text-[11px]"} text-slate-500`}>≈ {formatVnd(l.priceVnd, "en")} · {t("listing.fxNote", { rate: fx.rate.toLocaleString("en-US"), date: fx.date })}</p>}
+      {l.priceIllustrative && !onRequest && <p className="text-xs font-medium text-amber-700">{t("common.illustrativePrice")}</p>}
     </div>
   );
 }

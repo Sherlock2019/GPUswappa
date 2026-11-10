@@ -365,7 +365,8 @@ export const searchSchema = z.object({
   model: z.string().max(50).optional(),
   manufacturer: z.enum(["NVIDIA", "AMD", "INTEL", "SERVER_MANUFACTURER", "OTHER"]).optional().catch(undefined),
   location: z.string().max(50).optional(),
-  condition: z.enum(["NEW", "UNUSED", "USED", "REFURBISHED"]).optional().catch(undefined),
+  // PREOWNED = used + refurbished; NEW_ANY = new + unused
+  condition: z.enum(["NEW", "UNUSED", "USED", "REFURBISHED", "PREOWNED", "NEW_ANY"]).optional().catch(undefined),
   priceMin: z.coerce.number().int().min(0).optional().catch(undefined),
   priceMax: z.coerce.number().int().min(0).optional().catch(undefined),
   qtyMin: z.coerce.number().int().min(0).optional().catch(undefined),
@@ -403,7 +404,9 @@ export async function searchListings(raw: Record<string, string | string[] | und
   if (p.model) and.push({ gpuModelId: p.model });
   if (p.manufacturer) and.push({ manufacturer: p.manufacturer });
   if (p.location) and.push({ location: { code: p.location } });
-  if (p.condition) and.push({ condition: p.condition });
+  if (p.condition === "PREOWNED") and.push({ condition: { in: ["USED", "REFURBISHED"] } });
+  else if (p.condition === "NEW_ANY") and.push({ condition: { in: ["NEW", "UNUSED"] } });
+  else if (p.condition) and.push({ condition: p.condition });
   if (p.priceMin !== undefined) and.push({ priceVnd: { gte: BigInt(p.priceMin) } });
   if (p.priceMax !== undefined) and.push({ priceVnd: { lte: BigInt(p.priceMax) } });
   if (p.qtyMin !== undefined) and.push({ gpuQuantity: { gte: p.qtyMin } });

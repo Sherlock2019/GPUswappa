@@ -2,13 +2,14 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getLocale, getT } from "@/lib/i18n/server";
 import { PageHeader, Alert } from "@/components/ui";
-import { CreditedPhoto } from "@/components/listing";
+import { CreditedPhoto, ListingCard } from "@/components/listing";
+import { searchListings } from "@/lib/services/listings";
 import { LANDED_COST_BUFFER, MARKET_DATA_AS_OF, MARKET_SOURCES, NEW_GPU_PRICES } from "@/lib/market-data";
 
 export const metadata: Metadata = { title: "New data-centre GPU market" };
 
 export default async function NewGpuMarketPage() {
-  const [t, locale] = await Promise.all([getT(), getLocale()]);
+  const [t, locale, newListings] = await Promise.all([getT(), getLocale(), searchListings({ condition: "NEW_ANY", sort: "newest" })]);
   const channels = t.raw<{ title: string; text: string }[]>("newMarket.channels");
   const rules = t.raw<{ title: string; text: string }[]>("newMarket.rules");
 
@@ -21,7 +22,7 @@ export default async function NewGpuMarketPage() {
         actions={
           <>
             <Link href="/requests?condition=NEW_OR_UNUSED#new" className="btn-primary">{t("newMarket.cta")}</Link>
-            <Link href="/marketplace?condition=NEW" className="btn-secondary">{t("newMarket.browseNew")}</Link>
+            <Link href="/marketplace?condition=NEW_ANY" className="btn border border-white/30 text-white hover:bg-white/10">{t("newMarket.browseNew")}</Link>
           </>
         }
       />
@@ -41,6 +42,17 @@ export default async function NewGpuMarketPage() {
             </ul>
           </div>
           <CreditedPhoto k="h100Standing" locale={locale} t={t} imgClass="h-64" />
+        </section>
+
+        <section aria-labelledby="newlist">
+          <h2 id="newlist" className="mb-4 text-2xl font-bold">{t("newMarket.listTitle")}</h2>
+          {newListings.items.length === 0 ? (
+            <p className="text-sm text-slate-500">{t("market.empty")}</p>
+          ) : (
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {newListings.items.map((l) => <ListingCard key={l.id} l={l} t={t} locale={locale} />)}
+            </div>
+          )}
         </section>
 
         <section aria-labelledby="prices">

@@ -33,9 +33,8 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
             <li>reviewer@example.com — {t("enums.Role.REVIEWER")}</li>
             <li>broker@example.com — {t("enums.Role.BROKER")}</li>
             <li>broker2@example.com — {t("enums.Role.BROKER")}</li>
-            <li>seller@example.com — {t("enums.Role.SELLER")}</li>
-            <li>seller2@example.com — {t("enums.Role.SELLER")}</li>
-            <li>buyer@example.com — {t("enums.Role.BUYER")}</li>
+            <li>seller@ · seller2@ · seller3@ · seller4@ · seller5@example.com — {t("enums.Role.SELLER")}</li>
+            <li>buyer@ · buyer2@ · buyer3@ · buyer4@ · buyer5@example.com — {t("enums.Role.BUYER")}</li>
           </ul>
         </div>
       )}

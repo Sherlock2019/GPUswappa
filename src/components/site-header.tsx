@@ -5,17 +5,25 @@ import { logoutAction, setLocaleAction } from "@/app/actions/auth";
 
 function Logo({ t }: { t: T }) {
   return (
-    <Link href="/" className="flex items-center gap-2" aria-label={t("common.brand")}>
-      <svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true">
-        <rect x="1" y="1" width="32" height="32" rx="8" fill="#0f2147" />
-        <rect x="7" y="11" width="20" height="12" rx="2" fill="none" stroke="#5a8bff" strokeWidth="2" />
-        <circle cx="13" cy="17" r="2.5" fill="#2dd4bf" />
-        <circle cx="21" cy="17" r="2.5" fill="#2dd4bf" />
-        <path d="M9 23v3M13 23v3M17 23v3" stroke="#5a8bff" strokeWidth="1.6" />
+    <Link href="/" className="flex shrink-0 items-center gap-3" aria-label={t("common.brand")}>
+      <svg width="44" height="44" viewBox="0 0 44 44" aria-hidden="true">
+        <defs>
+          <linearGradient id="lg" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stopColor="#1d5bff" />
+            <stop offset="1" stopColor="#14b8a6" />
+          </linearGradient>
+        </defs>
+        <rect x="1" y="1" width="42" height="42" rx="11" fill="url(#lg)" />
+        <rect x="9" y="14" width="26" height="15" rx="2.5" fill="none" stroke="#fff" strokeWidth="2.2" />
+        <circle cx="17" cy="21.5" r="3.2" fill="#fff" />
+        <circle cx="27" cy="21.5" r="3.2" fill="#fff" />
+        <path d="M12 29v4M17 29v4M22 29v4M27 29v4" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
       </svg>
-      <span className="leading-tight">
-        <span className="block text-base font-bold text-white">{t("common.brand")}</span>
-        <span className="block text-[10px] uppercase tracking-wider text-teal-400">{t("common.operator")}</span>
+      <span className="leading-none">
+        <span className="block whitespace-nowrap text-2xl font-extrabold tracking-tight text-white">
+          AI-GPU-<span className="bg-gradient-to-r from-electric-400 to-teal-400 bg-clip-text text-transparent">Swapper</span>
+        </span>
+        <span className="mt-1 block whitespace-nowrap text-[10px] font-semibold uppercase tracking-[0.25em] text-slate-400">{t("common.operator")}</span>
       </span>
     </Link>
   );
@@ -23,14 +31,13 @@ function Logo({ t }: { t: T }) {
 
 export function SiteHeader({ t, locale, actor, unread }: { t: T; locale: Locale; actor: Actor; unread: number }) {
   const nav: [string, string][] = [
-    ["/marketplace", t("nav.marketplace")],
+    ["/used-gpus", t("nav.usedMarket")],
     ["/new-gpus", t("nav.newMarket")],
+    ["/marketplace", t("nav.marketplace")],
     ["/sell", t("nav.sell")],
     ["/requests", t("nav.requests")],
     ["/swap", t("nav.swap")],
     ["/services", t("nav.services")],
-    ["/why", t("nav.why")],
-    ["/how-it-works", t("nav.howItWorks")],
     ["/trust", t("nav.trust")],
   ];
   const staff = actor && ["ADMIN", "REVIEWER", "BROKER"].includes(actor.role);
@@ -78,7 +85,7 @@ export function SiteHeader({ t, locale, actor, unread }: { t: T; locale: Locale;
 
   return (
     <header className="sticky top-0 z-40 border-b border-navy-700 bg-navy-900/95 backdrop-blur">
-      <div className="container-page flex h-16 items-center justify-between gap-4">
+      <div className="mx-auto flex h-[76px] w-full max-w-[1600px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
         <Logo t={t} />
         <nav aria-label="Main" className="hidden 2xl:block">
           <ul className="flex items-center gap-1">

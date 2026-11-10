@@ -36,7 +36,7 @@ async function main() {
   page.on("pageerror", (e) => failures.push(`pageerror ${page.url()}: ${e.message}`));
 
   // Visitor
-  for (const [p, s] of [["/", "home-vi"], ["/marketplace", "marketplace"], ["/new-gpus", "new-gpus"], ["/why", "why"], ["/services", "services"], ["/trust", "trust"], ["/how-it-works", null], ["/sell", null], ["/requests", null], ["/swap", null], ["/about", null], ["/contact", null], ["/legal/terms", "legal"], ["/credits", null]] as const) {
+  for (const [p, s] of [["/", "home-vi"], ["/marketplace", "marketplace"], ["/new-gpus", "new-gpus"], ["/used-gpus", "used-gpus"], ["/why", "why"], ["/services", "services"], ["/trust", "trust"], ["/how-it-works", null], ["/sell", null], ["/requests", null], ["/swap", null], ["/about", null], ["/contact", null], ["/legal/terms", "legal"], ["/credits", null]] as const) {
     await visit(page, p, s ?? undefined);
   }
   const first = await page.goto(`${BASE}/marketplace`).then(() => page.locator("article h3 a").first().getAttribute("href"));
@@ -44,6 +44,7 @@ async function main() {
   // English
   await page.context().addCookies([{ name: "locale", value: "en", url: BASE }]);
   await visit(page, "/", "home-en");
+  await visit(page, "/used-gpus", "used-gpus-en");
   if (first) await visit(page, first, "listing-detail-en");
   await page.context().clearCookies();
   // Mobile
@@ -69,6 +70,16 @@ async function main() {
   await page.goto(`${BASE}/dashboard/cases`);
   const sCase = await page.locator("table a").first().getAttribute("href");
   if (sCase) await visit(page, sCase, "seller-case");
+
+  // New ready-to-use used-GPU demo accounts
+  for (const email of ["seller3@example.com", "seller5@example.com"]) {
+    await login(page, email);
+    await visit(page, "/dashboard/listings");
+  }
+  for (const email of ["buyer2@example.com", "buyer5@example.com"]) {
+    await login(page, email);
+    await visit(page, "/dashboard/requests");
+  }
 
   // Broker
   await login(page, "broker@example.com");

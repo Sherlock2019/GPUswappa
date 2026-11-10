@@ -9,7 +9,8 @@ import { getListingForPage, isSaved, similarListings } from "@/lib/services/list
 import { listBadgeDefinitions } from "@/lib/services/admin";
 import { getMyCompany } from "@/lib/services/companies";
 import { fxInfo, getSettings } from "@/lib/settings";
-import { formatDate, formatUsd } from "@/lib/format";
+import { formatDate } from "@/lib/format";
+import { PHOTOS } from "@/lib/photos";
 import { prisma } from "@/lib/db";
 import { isStaff } from "@/lib/rbac";
 import { Alert, DefList, GpuPlaceholder, Pill, Section } from "@/components/ui";
@@ -42,17 +43,40 @@ export default async function ListingPage({ params }: P) {
   const swapOk = l.transactionType === "SWAP" || l.transactionType === "SALE_OR_SWAP";
 
   return (
+    <>
+    {/* Data-centre banner with the listing title */}
+    <section className="relative overflow-hidden bg-navy-950 text-white">
+      <img src={PHOTOS.dcCern.src} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-cover opacity-30" />
+      <div className="absolute inset-0 bg-gradient-to-r from-navy-950 via-navy-950/90 to-navy-900/50" />
+      <div className="grid-bg absolute inset-0 opacity-50" />
+      <div className="container-page relative py-10">
+        <nav aria-label="Breadcrumb" className="text-sm text-slate-400">
+          <Link href="/marketplace" className="hover:text-white">{t("nav.marketplace")}</Link>
+          {l.category && (
+            <>
+              {" / "}
+              <Link href={`/marketplace?category=${l.category.slug}`} className="hover:text-white">{lname(l.category, locale)}</Link>
+            </>
+          )}
+        </nav>
+        <div className="mt-3 flex flex-wrap gap-1">
+          {l.isDemo && <Pill tone="amber">{t("common.demoListing")}</Pill>}
+          {l.gpuModelName && <Pill tone="navy">{l.gpuModelName}{l.gpuQuantity ? ` × ${l.gpuQuantity}` : ""}</Pill>}
+          {l.condition && <Pill tone="blue">{t(`enums.Condition.${l.condition}`)}</Pill>}
+          {l.transactionType && <Pill tone="teal">{t(`enums.TransactionType.${l.transactionType}`)}</Pill>}
+        </div>
+        <h1 className="mt-3 max-w-4xl text-3xl font-bold leading-tight !text-white sm:text-4xl" lang={l.contentLanguage}>{l.title}</h1>
+        <p className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm text-slate-300">
+          <span>📍 {lname(l.location, locale)}</span>
+          <span>{t("listing.sellerAlias")}: <span className="font-mono font-semibold text-white">{l.sellerAlias}</span></span>
+          <span>{t("listing.listed")}: {formatDate(l.publishedAt, locale)}</span>
+          {l.badges.length > 0 && <span className="text-teal-400">✓ {l.badges.length} {t("listing.checksTitle").toLowerCase()}</span>}
+        </p>
+      </div>
+      <p className="absolute bottom-1 right-3 text-[10px] text-slate-500">{t("common.photoCredit", { author: PHOTOS.dcCern.author, license: PHOTOS.dcCern.license })}</p>
+    </section>
     <div className="container-page py-8">
       {preview && <div className="mb-4"><Alert tone="warn">{t("common.preview")} ({t(`enums.PublicationStatus.${l.publicationStatus}`)})</Alert></div>}
-      <nav aria-label="Breadcrumb" className="mb-4 text-sm text-slate-500">
-        <Link href="/marketplace" className="hover:text-electric-600">{t("nav.marketplace")}</Link>
-        {l.category && (
-          <>
-            {" / "}
-            <Link href={`/marketplace?category=${l.category.slug}`} className="hover:text-electric-600">{lname(l.category, locale)}</Link>
-          </>
-        )}
-      </nav>
 
       <div className="grid gap-8 lg:grid-cols-[1fr_380px]">
         <div className="space-y-6">
@@ -80,19 +104,6 @@ export default async function ListingPage({ params }: P) {
             ) : (
               <GpuPlaceholder label={t("listing.noImage")} className="h-72" />
             )}
-          </div>
-
-          <div>
-            <div className="flex flex-wrap gap-1">
-              {l.isDemo && <Pill tone="amber">{t("common.demoListing")}</Pill>}
-              {l.category && <Pill tone="blue">{lname(l.category, locale)}</Pill>}
-              {l.condition && <Pill>{t(`enums.Condition.${l.condition}`)}</Pill>}
-              {l.transactionType && <Pill tone="teal">{t(`enums.TransactionType.${l.transactionType}`)}</Pill>}
-            </div>
-            <h1 className="mt-2 text-2xl font-bold sm:text-3xl" lang={l.contentLanguage}>{l.title}</h1>
-            <p className="mt-1 text-sm text-slate-500">
-              📍 {lname(l.location, locale)} · {t("listing.listed")}: {formatDate(l.publishedAt, locale)}
-            </p>
           </div>
 
           <Section title={t("listing.description")}>
@@ -171,9 +182,7 @@ export default async function ListingPage({ params }: P) {
         <aside className="space-y-4 lg:sticky lg:top-20 lg:self-start">
           <div className="card p-5">
             <PriceTag l={l} t={t} locale={locale} large />
-            {fx && l.priceVnd && !l.priceOnRequest && (
-              <p className="mt-1 text-xs text-slate-500">{t("listing.usd", { usd: formatUsd(l.priceVnd / fx.rate, locale), rate: fx.rate.toLocaleString(), date: fx.date, source: fx.source })}</p>
-            )}
+            {fx && locale === "en" && l.priceVnd && !l.priceOnRequest && <p className="mt-1 text-[11px] text-slate-500">{t("listing.fxSource", { source: fx.source })}</p>}
             <dl className="mt-4 space-y-2 text-sm">
               <div className="flex justify-between gap-2"><dt className="text-slate-500">{t("listing.sellerAlias")}</dt><dd className="font-semibold">{l.sellerAlias}</dd></div>
               <div className="flex justify-between gap-2"><dt className="text-slate-500">{t("listing.platformRole")}</dt><dd className="text-right">{t(`enums.PlatformRole.${l.platformRole}`)}</dd></div>
@@ -253,5 +262,6 @@ export default async function ListingPage({ params }: P) {
         </section>
       )}
     </div>
+    </>
   );
 }
