@@ -40,3 +40,27 @@ export async function okState(messageKey = "common.saved"): Promise<ActionState>
   const t = await getT();
   return { ok: true, message: t(messageKey), ts: Date.now() };
 }
+
+/** Runs a service call, revalidates paths on success and returns a safe ActionState. */
+export async function run(fn: () => Promise<unknown>, okKey = "common.saved", paths: string[] = []): Promise<ActionState> {
+  try {
+    await fn();
+  } catch (e) {
+    return toActionState(e);
+  }
+  const { revalidatePath } = await import("next/cache");
+  for (const p of paths) revalidatePath(p, p.endsWith("]") ? "page" : undefined);
+  return okState(okKey);
+}
+
+/** FormData → object; keys listed in `multi` become arrays (checkbox groups). */
+export function formObject(fd: FormData, multi: string[] = []) {
+  const o: Record<string, unknown> = {};
+  for (const [k, v] of fd.entries()) {
+    if (typeof v !== "string") continue;
+    if (multi.includes(k)) (o[k] = (o[k] as string[] | undefined) ?? []), (o[k] as string[]).push(v);
+    else o[k] = v;
+  }
+  for (const k of multi) o[k] ??= [];
+  return o;
+}
