@@ -1,4 +1,3 @@
-/* eslint-disable max-lines */
 /**
  * DEMO SEED — clearly fictional data for local development and demos only.
  * - Refuses to run when NODE_ENV=production.

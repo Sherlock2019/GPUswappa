@@ -1,4 +1,3 @@
-/* eslint-disable max-lines */
 // Vietnamese (default). NOTE: UI translations were prepared during development and
 // require professional review before production. Legal text is NOT legally approved.
 const vi = {
@@ -935,6 +934,9 @@ const vi = {
     reviewNote: "Ghi chú xem xét",
     overrideReason: "Lý do ghi đè (bắt buộc khi từ chối hoặc khi người bán chưa khai báo)",
     schedule: "Lên lịch kiểm tra",
+    inspectionType: "Hình thức kiểm tra",
+    feeTrigger: "Thời điểm phát sinh phí",
+    commissionType: "Loại hoa hồng",
     when: "Thời gian",
     location: "Địa điểm (riêng tư)",
     shareLocation: "Chia sẻ địa điểm với các bên tham gia",

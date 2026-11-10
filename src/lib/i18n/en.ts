@@ -1,4 +1,3 @@
-/* eslint-disable max-lines */
 import type { Dictionary } from "./vi";
 
 const en: Dictionary = {
@@ -934,6 +933,9 @@ const en: Dictionary = {
     reviewNote: "Review note",
     overrideReason: "Override reason (required to reject, or when the seller has not declared)",
     schedule: "Schedule inspection",
+    inspectionType: "Inspection type",
+    feeTrigger: "Fee trigger",
+    commissionType: "Commission type",
     when: "Date & time",
     location: "Location (private)",
     shareLocation: "Share location with participants",

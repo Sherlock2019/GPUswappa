@@ -37,6 +37,6 @@ export async function changePasswordAction(_: ActionState, fd: FormData): Promis
   return run(async () => undefined);
 }
 
-export async function markAllReadAction(_: ActionState): Promise<ActionState> {
+export async function markAllReadAction(): Promise<ActionState> {
   return run(async () => markAllRead(await getActor()), "common.saved", ["/dashboard/notifications"]);
 }

@@ -1,4 +1,3 @@
-/* eslint-disable max-lines */
 import { z } from "zod";
 import type {
   Company,

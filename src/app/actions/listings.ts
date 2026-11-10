@@ -8,7 +8,7 @@ import { archiveOwnListing, createDraft, replyToReview, saveDraftStep, submitLis
 import { deleteDocument, deleteListingImage, uploadListingDocument, uploadListingImage, type UploadFile } from "@/lib/services/files";
 import { acceptBrokerageTerms } from "@/lib/services/brokerage";
 
-export async function createDraftAction(_: ActionState): Promise<ActionState> {
+export async function createDraftAction(): Promise<ActionState> {
   let id: string;
   try {
     id = (await createDraft(await getActor())).id;

@@ -58,8 +58,11 @@ export function formObject(fd: FormData, multi: string[] = []) {
   const o: Record<string, unknown> = {};
   for (const [k, v] of fd.entries()) {
     if (typeof v !== "string") continue;
-    if (multi.includes(k)) (o[k] = (o[k] as string[] | undefined) ?? []), (o[k] as string[]).push(v);
-    else o[k] = v;
+    if (multi.includes(k)) {
+      const arr = (o[k] as string[] | undefined) ?? [];
+      arr.push(v);
+      o[k] = arr;
+    } else o[k] = v;
   }
   for (const k of multi) o[k] ??= [];
   return o;
