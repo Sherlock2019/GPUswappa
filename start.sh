@@ -57,7 +57,19 @@ if [ ! -f .env ]; then
   sed "s/dev-only-change-me-dev-only-change-me-0000/$SECRET/" .env.example > .env
   ok ".env created — demo password is SEED_DEMO_PASSWORD in .env"
 fi
+
+# ── EC2: point APP_URL at the public IP (only while it still says localhost) ──
+TOKEN=$(curl -fsS -m 2 -X PUT http://169.254.169.254/latest/api/token \
+  -H 'X-aws-ec2-metadata-token-ttl-seconds: 60' 2>/dev/null || true)
+PUBLIC_IP=""
+[ -n "$TOKEN" ] && PUBLIC_IP=$(curl -fsS -m 2 -H "X-aws-ec2-metadata-token: $TOKEN" \
+  http://169.254.169.254/latest/meta-data/public-ipv4 2>/dev/null || true)
+if [ -n "$PUBLIC_IP" ] && grep -q '^APP_URL="http://localhost' .env; then
+  sed -i "s#^APP_URL=.*#APP_URL=\"http://$PUBLIC_IP:$PORT\"#" .env
+  ok "EC2 detected — APP_URL set to http://$PUBLIC_IP:$PORT (edit .env for a domain/HTTPS)"
+fi
 set -a; . ./.env; set +a
+BASE_URL=${APP_URL:-http://localhost:$PORT}
 
 # ── Dependencies ──
 if [ ! -d node_modules ] || [ package-lock.json -nt node_modules/.package-lock.json ]; then
@@ -96,8 +108,8 @@ else
   NODE_OPTIONS="--max-old-space-size=3072" npx next build >/tmp/gpuswapper-build.log 2>&1 || { tail -30 /tmp/gpuswapper-build.log; die "Build failed (full log: /tmp/gpuswapper-build.log)"; }
   ok "Build complete"
   echo
-  echo "  App:      http://localhost:$PORT"
-  echo "  Admin:    http://localhost:$PORT/admin"
+  echo "  App:      $BASE_URL"
+  echo "  Admin:    $BASE_URL/admin"
   echo "  Accounts: admin@ / reviewer@ / broker@ / broker2@ / seller@ / seller2@ / buyer@ example.com"
   echo "  Password: SEED_DEMO_PASSWORD from .env"
   echo "  Stop:     ./start.sh --stop   (Ctrl+C also stops the app)"

@@ -7,6 +7,17 @@ import type { Actor } from "./rbac";
 
 export type SessionData = { userId?: string; issuedAt?: number };
 
+/**
+ * Secure cookies are only stored by browsers over HTTPS (or on localhost). Serving the production
+ * build over plain http://<public-ip> (e.g. an EC2 demo without TLS) would silently break login,
+ * so follow the public URL's scheme. COOKIE_SECURE="true"/"false" overrides.
+ */
+function cookieSecure() {
+  const forced = process.env.COOKIE_SECURE;
+  if (forced === "true" || forced === "false") return forced === "true";
+  return (process.env.APP_URL ?? "").startsWith("https://");
+}
+
 function sessionPassword() {
   const pw = process.env.SESSION_SECRET;
   if (!pw || pw.length < 32) throw new Error("SESSION_SECRET must be set to at least 32 characters");
@@ -21,7 +32,7 @@ export async function getSession() {
     cookieOptions: {
       httpOnly: true,
       sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
+      secure: cookieSecure(),
       path: "/",
     },
   });
